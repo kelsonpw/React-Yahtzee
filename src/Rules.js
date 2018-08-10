@@ -1,9 +1,9 @@
-/** Rule for Yahtzee scoring. 
- * 
+/** Rule for Yahtzee scoring.
+ *
  * This is an "abstract class"; the real rules are subclasses of these.
  * This stores all parameters passed into it as properties on the instance
  * (to simplify child classes so they don't need constructors of their own).
- * 
+ *
  * It contains useful functions for summing, counting values, and counting
  * frequencies of dice. These are used by subclassed rules.
  */
@@ -15,78 +15,106 @@ class Rule {
   }
 
   sum(dice) {
-    // sum of all dice
+    // sum of all die in dice
     return dice.reduce((prev, curr) => prev + curr);
   }
 
   freq(dice) {
-    // frequencies of dice values
+    // frequencies of each die in dice values
     const freqs = new Map();
-    for (let d of dice)
-      freqs.set(d, (freqs.get(d) || 0) + 1);
+    for (let d of dice) freqs.set(d, (freqs.get(d) || 0) + 1);
     return Array.from(freqs.values());
   }
 
   count(dice, val) {
-    // # times val appears in dice
+    // # Counts each time that value (of die) appears in dice
     return dice.filter(d => d === val).length;
   }
 }
 
-
-/** Given a sought-for val, return sum of dice of that val. 
- * 
+/** Given a sought-for val, return sum of dice of that val.
+ *
  * Used for rules like "sum of all ones"
-*/
+ * For example totaling 1's in [1,1,1,3,4] total is 3
+ */
 
 class TotalOneNumber extends Rule {
-  evalRoll = (dice) => {
+  evalRoll = dice => {
     return this.val * this.count(dice, this.val);
-  }
+  };
 }
 
-/** Given a required # of same dice, return sum of all dice. 
- * 
+/** Given a required # of same dice, return sum of all dice.
+ *
  * Used for rules like "sum of all dice when there is a 3-of-kind"
-*/
+ */
 
 class SumDistro extends Rule {
-  evalRoll = (dice) => {
+  evalRoll = dice => {
+    // debugger
     // do any of the counts meet of exceed this distro?
-    return (this.freq(dice).some(c => c >= this.count)) ? this.sum(dice) : 0;
-  }
+    return this.freq(dice).some(c => c >= this.count) ? this.sum(dice) : 0;
+  };
 }
 
-/** Check if full house (3-of-kind and 2-of-kind) */
+/** Check if full house (3-of-kind and 2-of-kind)
+ *
+ * Full house = [1,1,1,2,2], or [44466]
+ */
 
-class FullHouse {
-  // TODO
+class FullHouse extends Rule {
+  evalRoll = dice => {
+    return this.freq(dice).includes(3) && this.freq(dice).includes(2)
+      ? this.score
+      : 0;
+  };
 }
+
+// Score needs to be 25.
 
 /** Check for small straights. */
 
-class SmallStraight {
-  // TODO
+class SmallStraight extends Rule {
+  evalRoll = dice => {
+    // find unique values by creating a set
+    const set = new Set(dice);
+    
+    const d = Array.from(set).sort((a, b) => a - b);
+    let count = 1;
+    let prev = d[0];
+    for (let i = 1; i < d.length; i++) {
+      if (d[i] - prev === 1) {
+        count++;
+      } else if (count !== 4) {
+        count = 1;
+      }
+      prev = d[i];
+    }
+    return count === 4 ? this.score : 0;
+  };
 }
 
 /** Check for large straights. */
 
 class LargeStraight extends Rule {
-  evalRoll = (dice) => {
+  evalRoll = dice => {
     const d = new Set(dice);
 
     // large straight must be 5 different dice & only one can be a 1 or a 6
     return d.size === 5 && (!d.has(1) || !d.has(6)) ? this.score : 0;
-  }
+  };
 }
 
-/** Check if all dice are same. */
+/** Check if all dice are same.
+ *
+ * Example : [11111] or [55555] etc
+ */
 
 class Yahtzee extends Rule {
-  evalRoll = (dice) => {
+  evalRoll = dice => {
     // all dice must be the same
-    return (this.freq(dice)[0] === 5) ? this.score : 0;
-  }
+    return this.freq(dice)[0] === 5 ? this.score : 0;
+  };
 }
 
 // ones, twos, etc score as sum of that value
@@ -97,15 +125,14 @@ const fours = new TotalOneNumber({ val: 4 });
 const fives = new TotalOneNumber({ val: 5 });
 const sixes = new TotalOneNumber({ val: 6 });
 
-// three/four of kind score as sum of all dice
 const threeOfKind = new SumDistro({ count: 3 });
 const fourOfKind = new SumDistro({ count: 4 });
 
 // full house scores as flat 25
-const fullHouse = "TODO";
+const fullHouse = new FullHouse({ score: 25 });
 
 // small/large straights score as 30/40
-const smallStraight = "TODO";
+const smallStraight = new SmallStraight({ score: 30 });
 const largeStraight = new LargeStraight({ score: 40 });
 
 // yahtzee scores as 50
