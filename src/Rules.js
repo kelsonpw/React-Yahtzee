@@ -78,7 +78,7 @@ class SmallStraight extends Rule {
   evalRoll = dice => {
     // find unique values by creating a set
     const set = new Set(dice);
-    
+
     const d = Array.from(set).sort((a, b) => a - b);
     let count = 1;
     let prev = d[0];
