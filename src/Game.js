@@ -29,42 +29,43 @@ class Game extends Component {
   };
 
   roll = evt => {
-    // roll dice whose indexes are in reroll
-    if (this.state.rollsLeft > 0)
-      this.setState(st => ({
-        dice: st.dice.map(
-          (d, i) => (st.locked[i] ? d : Math.ceil(Math.random() * 6))
-        ),
-        locked: st.rollsLeft > 1 ? st.locked : Array(NUM_DICE).fill(true),
-        rollsLeft: st.rollsLeft - 1
-      }));
-  };
-
-  toggleLocked = idx => {
-    // toggle whether idx is in locked or not
     this.setState(st => ({
-      locked: [
-        ...st.locked.slice(0, idx),
-        !st.locked[idx],
-        ...st.locked.slice(idx + 1)
-      ]
+      dice: st.dice.map(
+        (d, i) => (st.locked[i] ? d : Math.ceil(Math.random() * 6))
+      ),
+      locked: st.rollsLeft > 1 ? st.locked : Array(NUM_DICE).fill(true),
+      rollsLeft: st.rollsLeft - 1
     }));
   };
 
-  doScore = (rulename, ruleFn) => {
-    if (this.state.scores[rulename] === undefined) {
+  toggleLocked = idx => {
+    if (this.state.rollsLeft !== 3) {
       this.setState(st => ({
-        scores: st.scores[rulename]
-          ? { ...st.scores }
-          : { ...st.scores, [rulename]: ruleFn(this.state.dice) },
-        rollsLeft: NUM_ROLLS,
-        locked: Array(NUM_DICE).fill(false)
+        locked: [
+          ...st.locked.slice(0, idx),
+          !st.locked[idx],
+          ...st.locked.slice(idx + 1)
+        ]
       }));
-      this.roll();
     }
   };
 
+  doScore = (rulename, ruleFn) => {
+    this.setState(st => ({
+      scores: { ...st.scores, [rulename]: ruleFn(this.state.dice) },
+      rollsLeft: NUM_ROLLS,
+      locked: Array(NUM_DICE).fill(false),
+      dice: Array(NUM_DICE).fill(false)
+    }));
+  };
+
   render() {
+    let btnText;
+    if (this.state.rollsLeft < 3) {
+      btnText = this.state.rollsLeft + ' Rerolls Left';
+    } else {
+      btnText = 'Roll!';
+    }
     return (
       <section>
         <Dice
@@ -79,7 +80,7 @@ class Game extends Component {
           }
           onClick={this.roll}
         >
-          {this.state.rollsLeft} Rerolls Left
+          {btnText}
         </button>
         <Scoring doScore={this.doScore} scores={this.state.scores} />
       </section>
