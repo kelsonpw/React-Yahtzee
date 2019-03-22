@@ -1,18 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './Die.css';
 
-class Die extends Component {
-  render() {
-    return (
-      <button
-        className="Die"
-        style={{ backgroundColor: this.props.locked ? 'darkred' : 'red' }}
-        onClick={evt => this.props.handleClick(this.props.idx)}
-      >
-        {this.props.val}
-      </button>
-    );
-  }
+function Die({ locked, handleClick, idx, val }) {
+  return (
+    <button
+      className="Die"
+      style={{ backgroundColor: locked ? 'darkred' : 'red' }}
+      onClick={evt => handleClick(idx)}>
+      {val}
+    </button>
+  );
 }
 
 export default Die;

@@ -1,23 +1,21 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './Rule.css';
 
-class Rule extends Component {
-  render() {
-    if (this.props.score === undefined) {
-      return (
-        <tr className="Rule Rule-active" onClick={this.props.doScore}>
-          <td className="Rule-name">{this.props.name}</td>
-          <td className="Rule-score">{this.props.score}</td>
-        </tr>
-      );
-    } else {
-      return (
-        <tr className="Rule Rule-active">
-          <td className="Rule-name">{this.props.name}</td>
-          <td className="Rule-score">{this.props.score}</td>
-        </tr>
-      );
-    }
+function Rule({ score, doScore, name }) {
+  if (score === undefined) {
+    return (
+      <tr className="Rule Rule-active" onClick={doScore}>
+        <td className="Rule-name">{name}</td>
+        <td className="Rule-score">{score}</td>
+      </tr>
+    );
+  } else {
+    return (
+      <tr className="Rule Rule-active">
+        <td className="Rule-name">{name}</td>
+        <td className="Rule-score">{score}</td>
+      </tr>
+    );
   }
 }
 
